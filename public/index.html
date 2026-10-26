@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="id" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MyFinance - Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+      :root {
+        --bg: #09090b;
+        --card: #18181b;
+        --card-muted: #27272a;
+        --border: #2e2e34;
+        --border-muted: #242429;
+        --text: #fafafa;
+        --text-muted: #a1a1aa;
+        --text-dim: #71717a;
+        --primary: #fafafa;
+        --primary-fg: #09090b;
+        --income: #10b981;
+        --income-bg: rgba(16, 185, 129, 0.12);
+        --expense: #f43f5e;
+        --expense-bg: rgba(244, 63, 94, 0.12);
+        --font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 32px 20px;
+        -webkit-font-smoothing: antialiased;
+      }
+      .container {
+        max-width: 1080px;
+        margin: 0 auto;
+        width: 100%;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 28px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .brand-mark {
+        width: 26px;
+        height: 26px;
+        background: var(--text);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--bg);
+        font-weight: 700;
+        font-size: 0.85rem;
+      }
+      .brand h1 {
+        font-size: 1.15rem;
+        font-weight: 600;
+        letter-spacing: -0.4px;
+      }
+      .badge-user {
+        border: 1px solid var(--border);
+        background: var(--card-muted);
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-weight: 500;
+      }
+
+      .filters {
+        display: inline-flex;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 3px;
+        gap: 3px;
+      }
+      .filter-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 500;
+        font-family: var(--font);
+        transition: all 0.15s ease;
+      }
+      .filter-btn:hover {
+        color: var(--text);
+      }
+      .filter-btn.active {
+        background: var(--primary);
+        color: var(--primary-fg);
+        font-weight: 600;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+        width: 100%;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 20px 22px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-width: 0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+      .card-header-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      .card-title {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .card-icon {
+        font-size: 0.95rem;
+        font-weight: 700;
+      }
+      .card-value {
+        font-size: 1.65rem;
+        font-weight: 700;
+        letter-spacing: -0.8px;
+        line-height: 1.2;
+      }
+      .card-sub {
+        font-size: 0.75rem;
+        color: var(--text-dim);
+        margin-top: 6px;
+      }
+
+      .text-income {
+        color: var(--income) !important;
+      }
+      .text-expense {
+        color: var(--expense) !important;
+      }
+
+      .charts-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+        width: 100%;
+      }
+      @media (max-width: 820px) {
+        .charts-grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+      .chart-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 22px;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        width: 100%;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+      .chart-card h2 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        letter-spacing: -0.2px;
+        margin-bottom: 4px;
+        color: var(--text);
+      }
+      .chart-card p {
+        font-size: 0.75rem;
+        color: var(--text-dim);
+        margin-bottom: 16px;
+      }
+      .chart-box {
+        position: relative;
+        width: 100%;
+        height: 260px;
+        max-width: 100%;
+      }
+
+      .table-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 22px;
+        width: 100%;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+      .table-header {
+        margin-bottom: 16px;
+      }
+      .table-card h2 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        letter-spacing: -0.2px;
+        margin-bottom: 4px;
+      }
+      .table-card p {
+        font-size: 0.75rem;
+        color: var(--text-dim);
+      }
+      .table-wrap {
+        overflow-x: auto;
+        width: 100%;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+        min-width: 500px;
+      }
+      th {
+        text-align: left;
+        padding: 10px 14px;
+        color: var(--text-dim);
+        font-size: 0.72rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--border);
+      }
+      td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border-muted);
+        color: var(--text);
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      tbody tr:hover {
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: capitalize;
+        letter-spacing: 0.2px;
+      }
+      .badge.pemasukan {
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        background: var(--income-bg);
+        color: #34d399;
+      }
+      .badge.pengeluaran {
+        border: 1px solid rgba(244, 63, 94, 0.3);
+        background: var(--expense-bg);
+        color: #fb7185;
+      }
+
+      .error-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 48px 24px;
+        text-align: center;
+        max-width: 440px;
+        margin: 80px auto;
+      }
+      .error-card h2 {
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: -0.3px;
+        margin-bottom: 8px;
+        color: var(--text);
+      }
+      .error-card p {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+      }
+      .error-card code {
+        font-family: ui-monospace, monospace;
+        background: var(--card-muted);
+        border: 1px solid var(--border);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 80px 20px;
+        color: var(--text-dim);
+        font-size: 0.85rem;
+      }
+
+      .updating {
+        opacity: 0.6;
+        pointer-events: none;
+        transition: opacity 0.15s ease;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" id="app">
+      <div class="loading">Memuat data...</div>
+    </div>
+
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token");
+      let currentPeriod = "month";
+      let chartDonut = null;
+      let chartTrend = null;
+
+      function formatRupiah(num) {
+        return "Rp" + Math.abs(num).toLocaleString("id-ID");
+      }
+
+      async function loadData() {
+        if (!token) {
+          showError(
+            "Token Tidak Ditemukan",
+            "Buka bot Telegram dan ketik <code>/link</code> untuk mendapatkan tautan dashboard pribadi Anda.",
+          );
+          return;
+        }
+        const appEl = document.getElementById("app");
+        if (appEl && appEl.querySelector("header")) {
+          appEl.classList.add("updating");
+        }
+        try {
+          const res = await fetch(
+            `/api/stats?token=${encodeURIComponent(token)}&period=${currentPeriod}&_t=${Date.now()}`,
+          );
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            showError(
+              "Akses Ditolak",
+              err.error ||
+                "Token tidak valid atau sudah kadaluarsa. Kirim <code>/link</code> di bot Telegram untuk memperbarui tautan.",
+            );
+            return;
+          }
+          const data = await res.json();
+          renderDashboard(data);
+        } catch (e) {
+          showError(
+            "Gagal Memuat Data",
+            "Tidak dapat terhubung ke server. Silakan coba beberapa saat lagi.",
+          );
+        } finally {
+          if (appEl) appEl.classList.remove("updating");
+        }
+      }
+
+      function showError(title, msg) {
+        document.getElementById("app").innerHTML = `
+        <div class="error-card">
+          <h2>${title}</h2>
+          <p>${msg}</p>
+        </div>
+      `;
+      }
+
+      function setPeriod(period) {
+        if (currentPeriod === period) return;
+        currentPeriod = period;
+        loadData();
+      }
+
+      function renderDashboard(data) {
+        const s = data.summary;
+        const netSign = s.net >= 0 ? "+" : "-";
+        const netClass = s.net >= 0 ? "text-income" : "text-expense";
+
+        document.getElementById("app").innerHTML = `
+        <header>
+          <div class="brand">
+            <div class="brand-mark">/</div>
+            <h1>MyFinance</h1>
+            <span class="badge-user">${data.chatId}</span>
+          </div>
+          <div class="filters">
+            <button class="filter-btn ${currentPeriod === "today" ? "active" : ""}" onclick="setPeriod('today')">Hari Ini</button>
+            <button class="filter-btn ${currentPeriod === "month" ? "active" : ""}" onclick="setPeriod('month')">Bulan Ini</button>
+            <button class="filter-btn ${currentPeriod === "3months" ? "active" : ""}" onclick="setPeriod('3months')">3 Bulan</button>
+            <button class="filter-btn ${currentPeriod === "year" ? "active" : ""}" onclick="setPeriod('year')">Tahun Ini</button>
+            <button class="filter-btn ${currentPeriod === "all" ? "active" : ""}" onclick="setPeriod('all')">Semua</button>
+          </div>
+        </header>
+
+        <section class="cards">
+          <div class="card">
+            <div class="card-header-line">
+              <span class="card-title">Pemasukan</span>
+              <span class="card-icon text-income">↗</span>
+            </div>
+            <div class="card-value text-income">${formatRupiah(s.totalIncome)}</div>
+            <div class="card-sub">${s.incomeCount} transaksi tercatat</div>
+          </div>
+          <div class="card">
+            <div class="card-header-line">
+              <span class="card-title">Pengeluaran</span>
+              <span class="card-icon text-expense">↘</span>
+            </div>
+            <div class="card-value text-expense">${formatRupiah(s.totalExpense)}</div>
+            <div class="card-sub">${s.expenseCount} transaksi tercatat</div>
+          </div>
+          <div class="card">
+            <div class="card-header-line">
+              <span class="card-title">Saldo Bersih</span>
+              <span class="card-icon ${netClass}">±</span>
+            </div>
+            <div class="card-value ${netClass}">${netSign}${formatRupiah(s.net)}</div>
+            <div class="card-sub">Rasio tabungan ${s.savingsRate}%</div>
+          </div>
+          <div class="card">
+            <div class="card-header-line">
+              <span class="card-title">Total Transaksi</span>
+              <span class="card-icon">#</span>
+            </div>
+            <div class="card-value">${s.txCount}</div>
+            <div class="card-sub">Rentang waktu aktif</div>
+          </div>
+        </section>
+
+        <section class="charts-grid">
+          <div class="chart-card">
+            <h2>Distribusi Pengeluaran</h2>
+            <p>Proporsi pengeluaran berdasarkan kategori</p>
+            <div class="chart-box">
+              <canvas id="chartDonut"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h2>Tren Cashflow</h2>
+            <p>Pemasukan vs Pengeluaran per hari</p>
+            <div class="chart-box">
+              <canvas id="chartTrend"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <section class="table-card">
+          <div class="table-header">
+            <h2>Transaksi Terbaru</h2>
+            <p>Daftar transaksi terakhir pada periode ini</p>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Waktu</th>
+                  <th>Tipe</th>
+                  <th>Deskripsi</th>
+                  <th style="text-align: right;">Nominal</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${
+                  data.recent.length === 0
+                    ? `<tr><td colspan="4" style="text-align:center; color: var(--text-dim); padding: 32px 0;">Tidak ada transaksi</td></tr>`
+                    : data.recent
+                        .map((tx) => {
+                          const isIncome = tx.type === "pemasukan";
+                          return `
+                          <tr>
+                            <td>${tx.date} <span style="color:var(--text-dim); font-size:0.75rem; margin-left: 4px;">${tx.time}</span></td>
+                            <td><span class="badge ${tx.type}">${tx.type}</span></td>
+                            <td>${tx.desc}</td>
+                            <td style="text-align: right; font-weight: 600; font-family: ui-monospace, monospace;" class="${isIncome ? "text-income" : "text-expense"}">
+                              ${isIncome ? "+" : "-"}${formatRupiah(tx.amount)}
+                            </td>
+                          </tr>
+                        `;
+                        })
+                        .join("")
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      `;
+
+        renderCharts(data);
+      }
+
+      function renderCharts(data) {
+        if (chartDonut) chartDonut.destroy();
+        if (chartTrend) chartTrend.destroy();
+
+        const donutCtx = document.getElementById("chartDonut").getContext("2d");
+        const catLabels = data.categories.map((c) => c.name);
+        const catAmounts = data.categories.map((c) => c.amount);
+
+        if (catAmounts.length === 0) {
+          catLabels.push("Tidak ada pengeluaran");
+          catAmounts.push(1);
+        }
+
+        const monoPalette = [
+          "#fafafa",
+          "#d4d4d8",
+          "#a1a1aa",
+          "#71717a",
+          "#52525b",
+          "#3f3f46",
+          "#2e2e34",
+          "#242429",
+        ];
+
+        chartDonut = new Chart(donutCtx, {
+          type: "doughnut",
+          data: {
+            labels: catLabels,
+            datasets: [
+              {
+                data: catAmounts,
+                backgroundColor: monoPalette.slice(0, catLabels.length),
+                borderColor: "#18181b",
+                borderWidth: 2,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            resizeDelay: 50,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  color: "#a1a1aa",
+                  font: { family: "'Inter', sans-serif", size: 11 },
+                  boxWidth: 10,
+                  boxHeight: 10,
+                  padding: 14,
+                },
+              },
+              tooltip: {
+                backgroundColor: "#18181b",
+                borderColor: "#2e2e34",
+                borderWidth: 1,
+                titleColor: "#fafafa",
+                bodyColor: "#a1a1aa",
+                padding: 10,
+                boxPadding: 4,
+                bodyFont: { family: "'Inter', sans-serif", size: 12 },
+                callbacks: {
+                  label: (ctx) => ` ${ctx.label}: ${formatRupiah(ctx.raw)}`,
+                },
+              },
+            },
+          },
+        });
+
+        const trendCtx = document.getElementById("chartTrend").getContext("2d");
+        const trendLabels = data.timeline.map((t) => t.date.slice(0, 5));
+        const incData = data.timeline.map((t) => t.income);
+        const expData = data.timeline.map((t) => t.expense);
+
+        chartTrend = new Chart(trendCtx, {
+          type: "bar",
+          data: {
+            labels: trendLabels,
+            datasets: [
+              {
+                label: "Pemasukan",
+                data: incData,
+                backgroundColor: "#10b981",
+                borderRadius: 3,
+              },
+              {
+                label: "Pengeluaran",
+                data: expData,
+                backgroundColor: "#f43f5e",
+                borderRadius: 3,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            resizeDelay: 50,
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: {
+                  color: "#71717a",
+                  font: { family: "'Inter', sans-serif", size: 11 },
+                },
+              },
+              y: {
+                grid: { color: "#242429" },
+                ticks: {
+                  color: "#71717a",
+                  font: { family: "'Inter', sans-serif", size: 11 },
+                  callback: (v) =>
+                    v >= 1000000
+                      ? v / 1000000 + "M"
+                      : v >= 1000
+                        ? v / 1000 + "k"
+                        : v,
+                },
+              },
+            },
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  color: "#a1a1aa",
+                  font: { family: "'Inter', sans-serif", size: 11 },
+                  boxWidth: 10,
+                  boxHeight: 10,
+                  padding: 14,
+                },
+              },
+              tooltip: {
+                backgroundColor: "#18181b",
+                borderColor: "#2e2e34",
+                borderWidth: 1,
+                titleColor: "#fafafa",
+                bodyColor: "#a1a1aa",
+                padding: 10,
+                boxPadding: 4,
+                bodyFont: { family: "'Inter', sans-serif", size: 12 },
+                callbacks: {
+                  label: (ctx) =>
+                    ` ${ctx.dataset.label}: ${formatRupiah(ctx.raw)}`,
+                },
+              },
+            },
+          },
+        });
+      }
+
+      loadData();
+    </script>
+  </body>
+</html>

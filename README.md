@@ -22,6 +22,7 @@ otomatis dipisah per tahun, dengan laporan berwarna dan export `.xlsx` lewat Tel
 | `+50000 gaji`         | Catat pemasukan                               |
 | `-20000 kopi`         | Catat pengeluaran                             |
 | `50000 freelance`     | Pemasukan (tanpa tanda)                       |
+| `/link`               | Tautan dashboard web statistik & diagram      |
 | `/ringkasan`          | Ringkasan hari ini                            |
 | `/bulan`              | Ringkasan bulan ini                           |
 | `/laporan`            | Laporan bulan ini (detail di sheet `Laporan`) |
@@ -104,8 +105,16 @@ https://api.telegram.org/bot{BOT_TOKEN}/setWebhook?url=https://{YOUR_VERCEL_DOMA
 
 ```
 myfinance/
-├── api/webhook.js   # Handler serverless untuk Vercel
-├── dev.js           # Runner lokal (polling)
+├── api/
+│   ├── webhook.js   # Webhook handler Telegram (Vercel serverless)
+│   └── stats.js     # REST API data statistik dashboard (Vercel serverless)
+├── lib/
+│   ├── auth.js      # HMAC token generator, verifier & whitelist ID
+│   └── sheets.js    # Google Sheets reader/writer & Excel generator
+├── public/
+│   └── index.html   # Web UI Dashboard (Chart.js, responsif, dark theme)
+├── dev.js           # Runner lokal (polling Telegram + web server :3000)
+├── test.js          # Unit test token HMAC & kalkulasi
 ├── vercel.json
 ├── .env.example
 └── README.md
@@ -115,7 +124,9 @@ myfinance/
 
 Sheet tahunan (`2026`, `2027`, ...):
 
-| A       | B   | C     | D     | E    | F         | G      |
+| A       | B   | C     | D     | E    | F         | G      | H       |
+|---------|-----|-------|-------|------|-----------|--------|---------|
+| Tanggal | Jam | Bulan | Tahun | Tipe | Deskripsi | Jumlah | Chat ID |
 | ------- | --- | ----- | ----- | ---- | --------- | ------ |
 | Tanggal | Jam | Bulan | Tahun | Tipe | Deskripsi | Jumlah |
 
